@@ -182,3 +182,13 @@ sh scripts/run-qemu-venus.sh t2linux-x86_64.qcow2
 | **Apple Silicon — NPU & Video** | M1 T8103 Apple Neural Engine DRM driver + Asahi AVD H.264/HEVC VA-API (`B8G_ABI_MAGIC_V3`) | Optional | [`awesome-os/omarchy-ane`](https://github.com/awesome-os/omarchy-ane) · [`omarchy-m1-video`](https://github.com/awesome-os/omarchy-m1-video) |
 | **Apple Silicon — Kernel HIL Lab** | Boot-once test lab + crash recovery + Agent MCP (`B8G_ABI_MAGIC_V3`) | Optional | [`awesome-os/maclab`](https://github.com/awesome-os/maclab) |
 | **Canonical CAS & Runtimes** | `156+` `cas-v1` blobs (`sectium-browser`, `code-oss`, `godot`, `blender`, `obs`, `node`, `dotnet`, `powershell`, `qt`, `skia`, `dawn`, `blink`) | Built-in | [`awesome-os/b8g-ghost`](https://github.com/awesome-os/b8g-ghost) |
+
+## Quick Install & Run (Windows / Linux / macOS)
+
+```sh
+# Download latest release assets (all platforms)
+gh release download -R awesome-os/t2linux --dir ./t2linux-release
+
+# Or clone source directly (all platforms)
+git clone https://github.com/awesome-os/t2linux.git && cd t2linux
+```
