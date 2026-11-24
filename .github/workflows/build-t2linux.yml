@@ -1,6 +1,8 @@
 name: Build and Boot T2Linux
 
 on:
+  schedule:
+    - cron: '0 4 * * *'
   push:
     branches: [main]
   workflow_dispatch:

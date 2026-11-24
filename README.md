@@ -4,6 +4,14 @@
 
 T2Linux boots offline straight into a zero-dependency static musl C11 PID 1 (`/init`) verified against `B8G_ABI_MAGIC_V3` (`0x33564742`), mounts a persistent `LABEL=B8G_CAS` `ext4` volume (or `tmpfs` on live ISO), and hydrates everything on demand from `awesome-os/b8g-ghost @ cas-v1`.
 
+## Continuous Rolling Linux & Kernel Updates
+
+T2Linux is built for **always-fresh, rolling-latest Linux** with zero re-flashing and instant rollback:
+
+- **Continuous User-Space & Apps (`b8g-ghost @ cas-v1`):** Every runtime, C/Wasm shard, compiler, and desktop appliance (`sectium-browser`, `code-oss`, `brave`, `blender`, `qt6`, `ghost-py`, `ghost-jvm`, `ghost-cpp`) updates continuously from `awesome-os/b8g-ghost @ cas-v1` into `/var/lib/b8g/cas` with **Keep-Last-5** SHA-256 rollback.
+- **Daily Rolling Kernel & Image Builds:** GitHub Actions runs daily (`04:00 UTC`), repackaging the latest Linux kernel (`vmlinuz`) + `initramfs.cpio.zst` + Limine v8 hybrid ISO (`21.5 MiB`) and GPT QCOW2 (`18.2 MiB`), and **gates every build with two live QEMU boots** (direct kernel self-test + hybrid ISO Limine boot) before publishing.
+- **Unbrickable Atomic Rollback:** Keep-Last-5 CAS pins and Limine dual-slot boot entries (`slot-a` / `slot-b`) ensure a bad kernel or library update never bricks a machine — pick the previous slot at boot or roll back in $O(1)$.
+
 ## Architecture
 
 ```text
