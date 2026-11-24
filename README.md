@@ -151,3 +151,34 @@ zig cc -target aarch64-linux-musl -static -Os -s -Wall -Wextra src/init.c -o dis
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+
+---
+
+## Optional VirtIO-GPU Venus (VM Graphics Acceleration)
+
+T2Linux supports **optional VirtIO-GPU Venus** Vulkan / OpenGL ES acceleration inside VMs (QEMU with `virglrenderer` + `venus=true`, `crosvm`, `libkrun` / `krunkit`, and `atomickrisp`) while keeping the default `21.5 MiB` base ISO ultra-slim:
+
+- **Kernel Config Fragment:** [`config/virtio-gpu-venus.config`](./config/virtio-gpu-venus.config) (`CONFIG_DRM_VIRTIO_GPU`, `CONFIG_DRM_VIRTIO_GPU_KMS`, `CONFIG_UDMABUF`, `CONFIG_SYNC_FILE`)
+- **QEMU Venus Launcher:** [`scripts/run-qemu-venus.sh`](./scripts/run-qemu-venus.sh) (`-device virtio-gpu-gl,hostmem=4G,blob=true,venus=true`)
+- **Guest Vulkan ICD:** Pair with Mesa's `virtio` Vulkan ICD (`libvulkan_virtio.so` / `VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/virtio_icd.json`) to accelerate Wayland desktops (`t2desktop-noctalia`, `t2desktop-omarchy`, `awesome-os/explorer`), `sectium-browser`, and `godot` inside a VM.
+
+```sh
+sh scripts/run-qemu-venus.sh t2linux-x86_64.qcow2
+```
+
+---
+
+## Central Supported Hardware, Virtualization & Ecosystem Matrix
+
+| Category | Target / Module | Mode | Repository |
+| :--- | :--- | :--- | :--- |
+| **Architectures** | `x86_64` (UEFI/BIOS ISO & QCOW2), `aarch64` (UEFI ISO & QCOW2), `riscv64` (`/init`) | Built-in | [`awesome-os/t2linux`](https://github.com/awesome-os/t2linux) |
+| **VM Graphics (Optional)** | **VirtIO-GPU Venus** (`virtio-gpu-gl,blob=true,venus=true`, QEMU / `libkrun` / `atomickrisp`) | Optional | [`config/virtio-gpu-venus.config`](./config/virtio-gpu-venus.config) · [`scripts/run-qemu-venus.sh`](./scripts/run-qemu-venus.sh) |
+| **OCI Containers** | Multi-arch (`linux/amd64` + `linux/arm64`) `FROM scratch` images (`2.1 MB+`) | Built-in | [`awesome-os/dockerimages`](https://github.com/awesome-os/dockerimages) |
+| **Desktop — Noctalia** | Native C++23 Wayland + OpenGL ES Shell + File Manager (zero Qt/GTK) | Optional | [`awesome-os/t2desktop-noctalia`](https://github.com/awesome-os/t2desktop-noctalia) · [`noctalia`](https://github.com/awesome-os/noctalia) · [`explorer`](https://github.com/awesome-os/explorer) |
+| **Desktop — Omarchy** | MIT Hyprland/Wayland + Lumi Chromatic + `chonkstep` floating compositor | Optional | [`awesome-os/t2desktop-omarchy`](https://github.com/awesome-os/t2desktop-omarchy) · [`chonkstep`](https://github.com/awesome-os/chonkstep) |
+| **Apple Silicon — Darwin/XNU** | ARM64 Linux `7.0+` + `xnulinux` + SiliconForest M1/M2/M3 `m1n1` & kexts (`B8G_ABI_MAGIC_V3`) | Optional | [`awesome-os/t2xnu`](https://github.com/awesome-os/t2xnu) · [`siliconforest`](https://github.com/awesome-os/siliconforest) · [`siliconforest-m1n1`](https://github.com/awesome-os/siliconforest-m1n1) |
+| **Apple Silicon — NPU & Video** | M1 T8103 Apple Neural Engine DRM driver + Asahi AVD H.264/HEVC VA-API (`B8G_ABI_MAGIC_V3`) | Optional | [`awesome-os/omarchy-ane`](https://github.com/awesome-os/omarchy-ane) · [`omarchy-m1-video`](https://github.com/awesome-os/omarchy-m1-video) |
+| **Apple Silicon — Kernel HIL Lab** | Boot-once test lab + crash recovery + Agent MCP (`B8G_ABI_MAGIC_V3`) | Optional | [`awesome-os/maclab`](https://github.com/awesome-os/maclab) |
+| **Canonical CAS & Runtimes** | `156+` `cas-v1` blobs (`sectium-browser`, `code-oss`, `godot`, `blender`, `obs`, `node`, `dotnet`, `powershell`, `qt`, `skia`, `dawn`, `blink`) | Built-in | [`awesome-os/b8g-ghost`](https://github.com/awesome-os/b8g-ghost) |
