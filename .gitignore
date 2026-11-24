@@ -1,0 +1,6 @@
+dist/
+build/
+*.iso
+*.qcow2
+*.img
+*.tmp

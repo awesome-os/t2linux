@@ -1,0 +1,262 @@
+name: Build and Boot T2Linux
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-boot-x86_64:
+    name: Build & Boot T2Linux (x86_64)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build, ISO, disk, and QEMU dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            qemu-system-x86 qemu-utils ovmf xorriso mtools dosfstools \
+            e2fsprogs parted zstd busybox-static musl-tools ca-certificates \
+            jq curl cpio
+
+      - name: Compile static musl PID 1 (/init)
+        run: |
+          mkdir -p dist build
+          musl-gcc -static -Os -s -Wall -Wextra src/init.c -o dist/init-x86_64
+          file dist/init-x86_64
+          ls -lh dist/init-x86_64
+
+      - name: Fetch b8g-ghost from awesome-os/b8g-ghost @ cas-v1
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/awesome-os/b8g-ghost/main/manifests/index.json -o build/cas-index.json
+          GHOST_KEY="b8g-ghost-linux-x64"
+          GHOST_URL=$(jq -r --arg k "$GHOST_KEY" '.entries[$k].download_url // empty' build/cas-index.json)
+          GHOST_SHA=$(jq -r --arg k "$GHOST_KEY" '.entries[$k].sha256 // empty' build/cas-index.json)
+
+          if [ -z "$GHOST_URL" ]; then
+            GHOST_KEY="b8g-shim-linux-x64"
+            GHOST_URL=$(jq -r --arg k "$GHOST_KEY" '.entries[$k].download_url // empty' build/cas-index.json)
+            GHOST_SHA=$(jq -r --arg k "$GHOST_KEY" '.entries[$k].sha256 // empty' build/cas-index.json)
+          fi
+
+          test -n "$GHOST_URL"
+          echo "Fetched CAS manifest key: $GHOST_KEY ($GHOST_SHA)"
+          curl -fsSL "$GHOST_URL" -o build/cas-ghost-bin
+          echo "$GHOST_SHA  build/cas-ghost-bin" | sha256sum -c -
+          chmod +x build/cas-ghost-bin
+          file build/cas-ghost-bin
+
+      - name: Build initramfs-x86_64.cpio.zst
+        run: |
+          ROOTFS="$PWD/build/rootfs"
+          rm -rf "$ROOTFS"
+          mkdir -p "$ROOTFS"/{bin,sbin,proc,sys,dev,tmp,run,root,var/lib/b8g/cas,etc/ssl/certs}
+
+          cp dist/init-x86_64 "$ROOTFS/init"
+          chmod 755 "$ROOTFS/init"
+
+          cp /bin/busybox "$ROOTFS/bin/busybox"
+          chmod 755 "$ROOTFS/bin/busybox"
+          for cmd in sh mount umount uname ip udhcpc ls cat poweroff reboot wget sha256sum mkdir cp mv rm grep sed awk tar zcat echo sleep ps dmesg clear env id hostname; do
+            ln -sf busybox "$ROOTFS/bin/$cmd"
+          done
+
+          if file build/cas-ghost-bin | grep -qi "statically linked"; then
+            cp build/cas-ghost-bin "$ROOTFS/bin/b8g-ghost"
+            chmod 755 "$ROOTFS/bin/b8g-ghost"
+          else
+            cp build/cas-ghost-bin "$ROOTFS/bin/b8g-shim"
+            chmod 755 "$ROOTFS/bin/b8g-shim"
+            cat << 'EOF' > "$ROOTFS/bin/b8g-ghost"
+          #!/bin/sh
+          set -e
+          INDEX_URL="https://raw.githubusercontent.com/awesome-os/b8g-ghost/main/manifests/index.json"
+          CAS_DIR="${B8G_CAS_DIR:-/var/lib/b8g/cas}"
+          case "${1:-}" in
+            --version|-v)
+              echo "b8g-ghost 0.1.0 (t2linux cas-v1 hydrator, B8G_ABI_MAGIC_V3=0x33564742)"
+              exit 0
+              ;;
+            --help|-h|"")
+              echo "Usage: b8g-ghost [--version | index | fetch <sha256>]"
+              echo "  CAS store: $CAS_DIR"
+              echo "  Index URL: $INDEX_URL"
+              exit 0
+              ;;
+            index)
+              mkdir -p "$CAS_DIR"
+              wget -q -O "$CAS_DIR/index.json" "$INDEX_URL"
+              echo "Saved $CAS_DIR/index.json"
+              ;;
+            fetch)
+              mkdir -p "$CAS_DIR/blobs"
+              wget -q -O "$CAS_DIR/blobs/$2" "https://github.com/awesome-os/b8g-ghost/releases/download/cas-v1/$2"
+              echo "$2  $CAS_DIR/blobs/$2" | sha256sum -c -
+              ;;
+            *)
+              echo "Unknown command: $1" >&2
+              exit 1
+              ;;
+          esac
+          EOF
+            chmod 755 "$ROOTFS/bin/b8g-ghost"
+          fi
+
+          cp /etc/ssl/certs/ca-certificates.crt "$ROOTFS/etc/ssl/certs/ca-certificates.crt"
+          cat << 'EOF' > "$ROOTFS/etc/t2linux-release"
+          NAME="T2Linux"
+          VERSION="0.1.0"
+          ID=t2linux
+          PRETTY_NAME="T2Linux 0.1.0 (Awesome-OS b8g-ghost CAS)"
+          B8G_ABI_MAGIC_V3=0x33564742
+          EOF
+
+          (cd "$ROOTFS" && find . -print0 | cpio --null -ov --format=newc | zstd -19 -T0) > dist/initramfs-x86_64.cpio.zst
+          ls -lh dist/initramfs-x86_64.cpio.zst
+
+      - name: Stage bootable Linux x86_64 kernel
+        run: |
+          KPATH="/boot/vmlinuz-$(uname -r)"
+          if [ ! -f "$KPATH" ]; then
+            KPATH=$(ls -1 /boot/vmlinuz-* | sort -V | tail -n 1)
+          fi
+          echo "Using kernel: $KPATH"
+          sudo cp "$KPATH" dist/vmlinuz-x86_64
+          sudo chmod 644 dist/vmlinuz-x86_64
+          ls -lh dist/vmlinuz-x86_64
+
+      - name: Fetch Limine v8 and build hybrid UEFI/BIOS ISO
+        run: |
+          git clone --depth=1 --branch=v8.x-binary https://github.com/limine-bootloader/limine.git build/limine
+          make -C build/limine
+
+          mkdir -p build/iso_root/boot/limine build/iso_root/EFI/BOOT
+          cp dist/vmlinuz-x86_64 build/iso_root/boot/vmlinuz
+          cp dist/initramfs-x86_64.cpio.zst build/iso_root/boot/initramfs.cpio.zst
+          cp config/limine.conf build/iso_root/boot/limine/limine.conf
+          cp build/limine/limine-bios.sys build/limine/limine-bios-cd.bin build/limine/limine-uefi-cd.bin build/iso_root/boot/limine/
+          cp build/limine/BOOTX64.EFI build/iso_root/EFI/BOOT/
+
+          xorriso -as mkisofs \
+            -R -r -J \
+            -b boot/limine/limine-bios-cd.bin \
+            -no-emul-boot -boot-load-size 4 -boot-info-table \
+            --efi-boot boot/limine/limine-uefi-cd.bin \
+            -efi-boot-part --efi-boot-image --protective-msdos-label \
+            build/iso_root -o dist/t2linux-x86_64.iso
+
+          ./build/limine/limine bios-install dist/t2linux-x86_64.iso
+          ls -lh dist/t2linux-x86_64.iso
+
+      - name: Build GPT UEFI + ext4 B8G_CAS QCOW2 image
+        run: |
+          # 128 MiB raw GPT disk:
+          #   p1: 1 MiB .. 65 MiB (64 MiB FAT32 EFI System Partition)
+          #   p2: 65 MiB .. 127 MiB (62 MiB ext4 LABEL=B8G_CAS)
+          truncate -s 128M build/t2linux-x86_64.img
+          parted -s build/t2linux-x86_64.img mklabel gpt
+          parted -s build/t2linux-x86_64.img mkpart ESP fat32 1MiB 65MiB
+          parted -s build/t2linux-x86_64.img set 1 esp on
+          parted -s build/t2linux-x86_64.img mkpart B8G_CAS ext4 65MiB 127MiB
+
+          truncate -s 64M build/esp.img
+          mkfs.fat -F 32 -n T2LINUX build/esp.img
+          mmd -i build/esp.img ::/EFI ::/EFI/BOOT ::/boot ::/boot/limine
+          mcopy -i build/esp.img build/limine/BOOTX64.EFI ::/EFI/BOOT/BOOTX64.EFI
+          mcopy -i build/esp.img config/limine.conf ::/boot/limine/limine.conf
+          mcopy -i build/esp.img dist/vmlinuz-x86_64 ::/boot/vmlinuz
+          mcopy -i build/esp.img dist/initramfs-x86_64.cpio.zst ::/boot/initramfs.cpio.zst
+
+          truncate -s 62M build/cas.img
+          mkfs.ext4 -q -L B8G_CAS -F build/cas.img
+
+          dd if=build/esp.img of=build/t2linux-x86_64.img bs=1M seek=1 conv=notrunc status=none
+          dd if=build/cas.img of=build/t2linux-x86_64.img bs=1M seek=65 conv=notrunc status=none
+
+          qemu-img convert -f raw -O qcow2 -c build/t2linux-x86_64.img dist/t2linux-x86_64.qcow2
+          qemu-img info dist/t2linux-x86_64.qcow2
+          ls -lh dist/t2linux-x86_64.qcow2
+
+      - name: QEMU Boot Test 1 — Direct Kernel + Initramfs Self-Test
+        run: |
+          set -o pipefail
+          timeout 60s qemu-system-x86_64 \
+            -kernel dist/vmlinuz-x86_64 \
+            -initrd dist/initramfs-x86_64.cpio.zst \
+            -append "console=ttyS0,115200 t2.selftest=1" \
+            -nographic -m 512 -no-reboot | tee build/qemu-direct.log
+
+          grep -F '[T2LINUX] PID 1 READY (B8G_ABI_MAGIC_V3=0x33564742)' build/qemu-direct.log
+          grep -F '[T2LINUX] SELFTEST PASS' build/qemu-direct.log
+
+      - name: QEMU Boot Test 2 — Hybrid ISO Boot via Limine
+        run: |
+          rm -f build/qemu-iso.log
+          qemu-system-x86_64 \
+            -cdrom dist/t2linux-x86_64.iso \
+            -boot d \
+            -nographic -m 512 -no-reboot \
+            > build/qemu-iso.log 2>&1 &
+          QPID=$!
+
+          FOUND=0
+          for i in $(seq 1 60); do
+            if grep -Fq '[T2LINUX] PID 1 READY (B8G_ABI_MAGIC_V3=0x33564742)' build/qemu-iso.log 2>/dev/null; then
+              FOUND=1
+              break
+            fi
+            if ! kill -0 "$QPID" 2>/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+
+          kill "$QPID" 2>/dev/null || true
+          wait "$QPID" 2>/dev/null || true
+
+          echo "=== ISO QEMU BOOT LOG ==="
+          tail -n 60 build/qemu-iso.log
+          test "$FOUND" -eq 1
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: t2linux-x86_64
+          path: |
+            dist/t2linux-x86_64.iso
+            dist/t2linux-x86_64.qcow2
+            dist/vmlinuz-x86_64
+            dist/initramfs-x86_64.cpio.zst
+            dist/init-x86_64
+
+      - name: Create or update v0.1.0 GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          (cd dist && sha256sum t2linux-x86_64.iso t2linux-x86_64.qcow2 vmlinuz-x86_64 initramfs-x86_64.cpio.zst init-x86_64 > SHA256SUMS.txt)
+          if gh release view v0.1.0 >/dev/null 2>&1; then
+            gh release upload v0.1.0 \
+              dist/t2linux-x86_64.iso \
+              dist/t2linux-x86_64.qcow2 \
+              dist/vmlinuz-x86_64 \
+              dist/initramfs-x86_64.cpio.zst \
+              dist/init-x86_64 \
+              dist/SHA256SUMS.txt \
+              --clobber
+          else
+            gh release create v0.1.0 \
+              dist/t2linux-x86_64.iso \
+              dist/t2linux-x86_64.qcow2 \
+              dist/vmlinuz-x86_64 \
+              dist/initramfs-x86_64.cpio.zst \
+              dist/init-x86_64 \
+              dist/SHA256SUMS.txt \
+              --title "T2Linux v0.1.0 — Hybrid UEFI/BIOS ISO & QEMU QCOW2" \
+              --notes "Sovereign cross-compiled bootable hybrid UEFI/BIOS ISO and QEMU QCOW2 powered by Awesome-OS b8g-ghost CAS (B8G_ABI_MAGIC_V3=0x33564742). Verified with live QEMU direct-kernel self-test and Limine hybrid ISO boot."
+          fi
