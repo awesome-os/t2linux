@@ -12,6 +12,17 @@ T2Linux is built for **always-fresh, rolling-latest Linux** with zero re-flashin
 - **Daily Rolling Kernel & Image Builds:** GitHub Actions runs daily (`04:00 UTC`), repackaging the latest Linux kernel (`vmlinuz`) + `initramfs.cpio.zst` + Limine v8 hybrid ISO (`21.5 MiB`) and GPT QCOW2 (`18.2 MiB`), and **gates every build with two live QEMU boots** (direct kernel self-test + hybrid ISO Limine boot) before publishing.
 - **Unbrickable Atomic Rollback:** Keep-Last-5 CAS pins and Limine dual-slot boot entries (`slot-a` / `slot-b`) ensure a bad kernel or library update never bricks a machine — pick the previous slot at boot or roll back in $O(1)$.
 
+## ARM64 Native Darwin / macOS Personality (`xnulinux`)
+
+Because T2Linux ships a modern **Linux `7.0+`** kernel, ARM64 (`aarch64`) hosts can pair T2Linux with the open-source [`AFK-surf/xnulinux`](https://github.com/AFK-surf/xnulinux) loadable kernel modules (`fki.ko` + `xnu.ko`, tracked in `awesome-os/upstream-mirrors @ mirror/xnulinux`) to run **native Linux and native Darwin/macOS userspaces side by side on the same CPUs and MMU with zero hypervisor overhead**:
+
+```sh
+# On an ARM64 T2Linux host, supply your own legally obtained macOS disk image:
+sh scripts/enable-xnulinux.sh /path/to/macos-system.img
+```
+
+> **Licensing note:** T2Linux ships only the open-source kernel-module loader (`scripts/enable-xnulinux.sh`) and never redistributes proprietary Apple macOS userspace files.
+
 ## Architecture
 
 ```text
