@@ -28,7 +28,7 @@ jobs:
       - name: Compile static musl PID 1 (/init)
         run: |
           mkdir -p dist build
-          musl-gcc -static -Os -s -Wall -Wextra src/init.c -o dist/init-x86_64
+          musl-gcc -march=x86-64 -static -Os -s -Wall -Wextra src/init.c -o dist/init-x86_64
           file dist/init-x86_64
           ls -lh dist/init-x86_64
 
@@ -187,6 +187,7 @@ jobs:
         run: |
           set -o pipefail
           timeout 60s qemu-system-x86_64 \
+            -cpu max \
             -kernel dist/vmlinuz-x86_64 \
             -initrd dist/initramfs-x86_64.cpio.zst \
             -append "console=ttyS0,115200 t2.selftest=1" \
@@ -199,6 +200,7 @@ jobs:
         run: |
           rm -f build/qemu-iso.log
           qemu-system-x86_64 \
+            -cpu max \
             -cdrom dist/t2linux-x86_64.iso \
             -boot d \
             -nographic -m 512 -no-reboot \

@@ -38,6 +38,8 @@ $argsList = @(
 
 if ($Arch -eq "aarch64") {
     $argsList += @("-M", "virt", "-cpu", "cortex-a72")
+} else {
+    $argsList += @("-cpu", "max")
 }
 
 if (-not $Gui) {
