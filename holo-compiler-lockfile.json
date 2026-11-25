@@ -1,0 +1,157 @@
+{
+  "schema": "holo-compiler-lockfile-v1",
+  "abiMagic": "0x33564742",
+  "casLayout": "v11",
+  "repo": "awesome-os/t2linux",
+  "targets": [
+    "linux-arm64",
+    "linux-x64"
+  ],
+  "generatedAt": "2026-11-24T23:53:02.473Z",
+  "dependencies": [
+    {
+      "id": "awesome-os/t2linux/init-aarch64",
+      "kind": "ghost-launcher",
+      "version": "v0.1.0",
+      "target": "linux-arm64",
+      "sha512": "52419d4c5505cee8b6dcd0c6f26d9956c3f63eb7235ee0ca32968a727062041cb185eca48c4a553d92013fbf439fab5541eb16f8784a3fb898b85b3b4e95ac62",
+      "size": 67464,
+      "executable": true,
+      "blob": "v11/files/52/52419d4c5505cee8b6dcd0c6f26d9956c3f63eb7235ee0ca32968a727062041cb185eca48c4a553d92013fbf439fab5541eb16f8784a3fb898b85b3b4e95ac62-exec",
+      "url": "https://github.com/awesome-os/t2linux/releases/download/v0.1.0/init-aarch64",
+      "dependencies": []
+    },
+    {
+      "id": "awesome-os/t2linux/init-riscv64",
+      "kind": "ghost-launcher",
+      "version": "v0.1.0",
+      "target": "any",
+      "sha512": "a608497b86eadd316d113e14a2719f5bf23e0b9cbc28ab718cffeb20cf1b9b841acbb28a9f82d32f3ab2a5c0066d893fb28989f03719635e30a0ba621613066d",
+      "size": 516576,
+      "executable": true,
+      "blob": "v11/files/a6/a608497b86eadd316d113e14a2719f5bf23e0b9cbc28ab718cffeb20cf1b9b841acbb28a9f82d32f3ab2a5c0066d893fb28989f03719635e30a0ba621613066d-exec",
+      "url": "https://github.com/awesome-os/t2linux/releases/download/v0.1.0/init-riscv64",
+      "dependencies": []
+    },
+    {
+      "id": "awesome-os/t2linux/init-x86_64",
+      "kind": "ghost-launcher",
+      "version": "v0.1.0",
+      "target": "linux-x64",
+      "sha512": "7f724e257081adb021414e1f8c41f47a05bea5619f67ca90c2d254450efdc513136477fe879751a891ad9bc68035d143356e1aacb41c72875ebe9e1b61a1057e",
+      "size": 55200,
+      "executable": true,
+      "blob": "v11/files/7f/7f724e257081adb021414e1f8c41f47a05bea5619f67ca90c2d254450efdc513136477fe879751a891ad9bc68035d143356e1aacb41c72875ebe9e1b61a1057e-exec",
+      "url": "https://github.com/awesome-os/t2linux/releases/download/v0.1.0/init-x86_64",
+      "dependencies": []
+    },
+    {
+      "id": "awesome-os/t2linux/initramfs-aarch64.cpio.zst",
+      "kind": "object",
+      "version": "v0.1.0",
+      "target": "linux-arm64",
+      "sha512": "76f23ef39c6e899e1553f617fb2bb19fbd0d5db84423481b917259980239c1b68ba7ab76f7a5752d50dd6ccd4fc9bd7507485086e4382e639698b09e6f24824e",
+      "size": 1044661,
+      "executable": false,
+      "blob": "v11/files/76/76f23ef39c6e899e1553f617fb2bb19fbd0d5db84423481b917259980239c1b68ba7ab76f7a5752d50dd6ccd4fc9bd7507485086e4382e639698b09e6f24824e",
+      "url": "https://github.com/awesome-os/t2linux/releases/download/v0.1.0/initramfs-aarch64.cpio.zst",
+      "dependencies": []
+    },
+    {
+      "id": "awesome-os/t2linux/initramfs-x86_64.cpio.zst",
+      "kind": "object",
+      "version": "v0.1.0",
+      "target": "linux-x64",
+      "sha512": "570fdf3e3abebd2f52ae4bd73da38a1285e529c40d356304747fcc5315c5b8a3658b0eba27f9a284be07ca16bd77bc1044caa012db8964d0639145925751fa21",
+      "size": 1163518,
+      "executable": false,
+      "blob": "v11/files/57/570fdf3e3abebd2f52ae4bd73da38a1285e529c40d356304747fcc5315c5b8a3658b0eba27f9a284be07ca16bd77bc1044caa012db8964d0639145925751fa21",
+      "url": "https://github.com/awesome-os/t2linux/releases/download/v0.1.0/initramfs-x86_64.cpio.zst",
+      "dependencies": []
+    },
+    {
+      "id": "awesome-os/t2linux/SHA256SUMS.txt",
+      "kind": "object",
+      "version": "v0.1.0",
+      "target": "any",
+      "sha512": "e322a0689f970630e40c9368afe7ffe6f357f40a3e2fe853aa98de72dc08075f1e5169843e224a916fdeda9efeb2de3ae95c16cf52c52a36f88df78685143110",
+      "size": 930,
+      "executable": false,
+      "blob": "v11/files/e3/e322a0689f970630e40c9368afe7ffe6f357f40a3e2fe853aa98de72dc08075f1e5169843e224a916fdeda9efeb2de3ae95c16cf52c52a36f88df78685143110",
+      "url": "https://github.com/awesome-os/t2linux/releases/download/v0.1.0/SHA256SUMS.txt",
+      "dependencies": []
+    },
+    {
+      "id": "awesome-os/t2linux/t2linux-aarch64.iso",
+      "kind": "object",
+      "version": "v0.1.0",
+      "target": "linux-arm64",
+      "sha512": "60989df8a1ee1b92bf8acd3d3d13ccb63624aa0c90772e7dd38e5e1993ed0c079cc051d5ebd3b2778fcca2112d48b31dc43deb282eab62872ec8c78e1e7ead14",
+      "size": 27873280,
+      "executable": false,
+      "blob": "v11/files/60/60989df8a1ee1b92bf8acd3d3d13ccb63624aa0c90772e7dd38e5e1993ed0c079cc051d5ebd3b2778fcca2112d48b31dc43deb282eab62872ec8c78e1e7ead14",
+      "url": "https://github.com/awesome-os/t2linux/releases/download/v0.1.0/t2linux-aarch64.iso",
+      "dependencies": []
+    },
+    {
+      "id": "awesome-os/t2linux/t2linux-aarch64.qcow2",
+      "kind": "object",
+      "version": "v0.1.0",
+      "target": "linux-arm64",
+      "sha512": "a97a142e4edc9c35d6a8d1f59b447419f560bfe83aae0824703e0ee9a065f2d280fb93b1ccc66e44158c15402866acad514d8288428f0c551770c1e5c6c0b622",
+      "size": 23460864,
+      "executable": false,
+      "blob": "v11/files/a9/a97a142e4edc9c35d6a8d1f59b447419f560bfe83aae0824703e0ee9a065f2d280fb93b1ccc66e44158c15402866acad514d8288428f0c551770c1e5c6c0b622",
+      "url": "https://github.com/awesome-os/t2linux/releases/download/v0.1.0/t2linux-aarch64.qcow2",
+      "dependencies": []
+    },
+    {
+      "id": "awesome-os/t2linux/t2linux-x86_64.iso",
+      "kind": "object",
+      "version": "v0.1.0",
+      "target": "linux-x64",
+      "sha512": "cabae15120ce8873d51931f3c2e84808dd5c1f96b6880637b980d22e5367585099bae140ff218eb8e712a8db1b6f84848c54eea1afd092d5bde62b25b5e3fdee",
+      "size": 22321152,
+      "executable": false,
+      "blob": "v11/files/ca/cabae15120ce8873d51931f3c2e84808dd5c1f96b6880637b980d22e5367585099bae140ff218eb8e712a8db1b6f84848c54eea1afd092d5bde62b25b5e3fdee",
+      "url": "https://github.com/awesome-os/t2linux/releases/download/v0.1.0/t2linux-x86_64.iso",
+      "dependencies": []
+    },
+    {
+      "id": "awesome-os/t2linux/t2linux-x86_64.qcow2",
+      "kind": "object",
+      "version": "v0.1.0",
+      "target": "linux-x64",
+      "sha512": "9b6cfd7885db6909fba56d9d470e4324b8db8a8adcb735f59627471f29140e01c507af1686e6b22b65f61f3e83b4c3a5607c724a96c2a5de189fb1dde2b44501",
+      "size": 18912768,
+      "executable": false,
+      "blob": "v11/files/9b/9b6cfd7885db6909fba56d9d470e4324b8db8a8adcb735f59627471f29140e01c507af1686e6b22b65f61f3e83b4c3a5607c724a96c2a5de189fb1dde2b44501",
+      "url": "https://github.com/awesome-os/t2linux/releases/download/v0.1.0/t2linux-x86_64.qcow2",
+      "dependencies": []
+    },
+    {
+      "id": "awesome-os/t2linux/vmlinuz-aarch64",
+      "kind": "object",
+      "version": "v0.1.0",
+      "target": "linux-arm64",
+      "sha512": "c94d1e492170499939f9ee964d005b3fc6c43111a74a73067b3e81ec727db2e5d2464b393ff965d8ae7513ec3dad943fb03ee22d51427287a687ebc9078215c8",
+      "size": 21987566,
+      "executable": false,
+      "blob": "v11/files/c9/c94d1e492170499939f9ee964d005b3fc6c43111a74a73067b3e81ec727db2e5d2464b393ff965d8ae7513ec3dad943fb03ee22d51427287a687ebc9078215c8",
+      "url": "https://github.com/awesome-os/t2linux/releases/download/v0.1.0/vmlinuz-aarch64",
+      "dependencies": []
+    },
+    {
+      "id": "awesome-os/t2linux/vmlinuz-x86_64",
+      "kind": "bin",
+      "version": "v0.1.0",
+      "target": "linux-x64",
+      "sha512": "a7236dfb971f62583d3607d04e4fba1f2cab88cb63459554651eea703fbcd966823eb4c944cfd75321666acbf03717da1dc68764e3964df4ddae22e46ff28d9b",
+      "size": 17295752,
+      "executable": true,
+      "blob": "v11/files/a7/a7236dfb971f62583d3607d04e4fba1f2cab88cb63459554651eea703fbcd966823eb4c944cfd75321666acbf03717da1dc68764e3964df4ddae22e46ff28d9b-exec",
+      "url": "https://github.com/awesome-os/t2linux/releases/download/v0.1.0/vmlinuz-x86_64",
+      "dependencies": []
+    }
+  ]
+}
