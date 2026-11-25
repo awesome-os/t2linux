@@ -186,9 +186,9 @@ sh scripts/run-qemu-venus.sh t2linux-x86_64.qcow2
 ## Quick Install & Run (Windows / Linux / macOS)
 
 ```sh
-# Download latest release assets (all platforms)
-gh release download -R awesome-os/t2linux --dir ./t2linux-release
+# Install / hydrate from v11 CAS via holo-pm
+holo-pm install repository://github.com/awesome-os/t2linux@main
 
-# Or clone source directly (all platforms)
-git clone https://github.com/awesome-os/t2linux.git && cd t2linux
+# Or project & run directly via holo-project (0-byte hardlink)
+holo-project "project://cpp/t2linux?from=repository://github.com/awesome-os/t2linux@main"
 ```
