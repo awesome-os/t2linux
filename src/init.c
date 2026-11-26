@@ -81,29 +81,22 @@ static void mount_v11_cas_store(void) {
     ensure_dir("/var/lib/b8g/cas", 0755);
 
     int mounted = 0;
-    /* Attempt persistent ext4 mount by label AWESOME_V11 or legacy B8G_CAS */
+    /* Silently mount persistent ext4 ONLY if already partitioned & labeled */
     const char *labels[] = {"/dev/disk/by-label/AWESOME_V11",
                             "/dev/disk/by-label/B8G_CAS", NULL};
     for (int i = 0; labels[i] != NULL && !mounted; i++) {
         if (access(labels[i], F_OK) == 0 &&
             mount(labels[i], "/var/lib/b8g/cas", "ext4", 0, NULL) == 0) {
-            printf("[AWESOME-OS] mounted persistent ext4 %s -> /var/lib/b8g/cas\n",
+            printf("[AWESOME-OS] v11 CAS: persistent ext4 (%s -> /var/lib/b8g/cas)\n",
                    labels[i]);
             mounted = 1;
         }
     }
 
-    if (!mounted && access("/bin/mount", X_OK) == 0) {
-        char *const mount_argv[] = {"/bin/mount", "-t", "ext4", "LABEL=B8G_CAS",
-                                    "/var/lib/b8g/cas", NULL};
-        if (run_wait(mount_argv) == 0) {
-            printf("[AWESOME-OS] mounted persistent ext4 LABEL=B8G_CAS -> /var/lib/b8g/cas\n");
-            mounted = 1;
-        }
-    }
-
     if (!mounted) {
-        mount_or_warn("tmpfs", "/var/lib/b8g/cas", "tmpfs", 0, "mode=0755");
+        /* Stateless Netboot-First mode: clean RAM tmpfs, zero disk dependency */
+        mount_or_warn("tmpfs", "/var/lib/b8g/cas", "tmpfs", 0, "mode=0755,size=512M");
+        printf("[AWESOME-OS] v11 CAS: stateless RAM netboot mode (/var/lib/b8g/cas/v11/files/)\n");
     }
 
     /* Ensure canonical v11 CAS directory layout */
