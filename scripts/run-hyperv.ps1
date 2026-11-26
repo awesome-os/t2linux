@@ -40,6 +40,7 @@ if (-not (Test-Path $vhdPath)) {
 if (-not $existing) {
     Write-Host "[AWESOME-OS] Creating Gen-2 UEFI Hyper-V VM '$VmName' ($MemoryMB MB RAM, $Cpus vCPU)..."
     New-VM -Name $VmName -MemoryStartupBytes ($MemoryMB * 1MB) -Generation 2 -SwitchName "Default Switch" | Out-Null
+    Set-VMMemory -VMName $VmName -DynamicMemoryEnabled $false -StartupBytes ($MemoryMB * 1MB)
     Set-VMProcessor -VMName $VmName -Count $Cpus
     Set-VMFirmware -VMName $VmName -EnableSecureBoot Off
     Add-VMHardDiskDrive -VMName $VmName -Path $vhdPath | Out-Null
